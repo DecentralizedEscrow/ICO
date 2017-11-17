@@ -6,9 +6,9 @@ The following functions are present:
 ***Parameters and functions can be changed and executed an unlimited number of times.***
 
 ###### setTimeEnd
-Change the ICO end time, instead of the predefined.
+Change the ICO end time, instead of predefined.
 ###### disallowTransfer
-Prohibit specific address token transfers within 30 days after the ICO or manually set the time up to which the token transfers are banned.
+Prohibit token transfers for specific address within 30 days after the ICO, or manually set the time up to which the token transfers are prohibited.
 ###### setTimeTransferAllowance
 Change the time before which transfers of tokens are prohibited.
 ###### setTokenPrice
