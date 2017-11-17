@@ -122,7 +122,7 @@ contract DESToken is StandardToken {
     mapping (address => bool) public noTransfer;
 	
 	// Время начала ICO и время окончания ICO
-	uint constant public TimeStart = 1111956800;//Константа - время начала ICO - 29.11.2017 в 15:00 по мск //1511956800
+	uint constant public TimeStart = 1511956800;//Константа - время начала ICO - 29.11.2017 в 15:00 по Мск
 	uint public TimeEnd = 1514375999;//Время окончания ICO - 27.12.2017 в 14:59:59 по мск
 	
 	// Время окончания бонусных этапов (недель)
@@ -162,8 +162,8 @@ contract DESToken is StandardToken {
     event TimeEndChanged(string _text, uint _timeEnd);//Время окончания ICO изменено вручную
     event TimeTransferAllowanceChanged(string _text, uint _timeAllowance);//Время, до которого запрещены переводы токенов, изменено вручную
     
-    address public wallet = 0x0;//Кошелек сбора средств 0x51559efc1acc15bcafc7e0c2fb440848c136a46b
     address public owner = 0x0;//Административные действия 0xE7F7d6cBCdC1fE78F938Bfaca6eA49604cB58D33
+    address public wallet = 0x0;//Кошелек сбора средств 0x51559efc1acc15bcafc7e0c2fb440848c136a46b
  
 function DESToken(address _owner, address _wallet) payable {
         
