@@ -1,7 +1,6 @@
 pragma solidity ^0.4.13;
 
 contract ERC20 {
-  uint public totalSupply;
   function balanceOf(address who) constant returns (uint);
   function allowance(address owner, address spender) constant returns (uint);
 
@@ -68,7 +67,7 @@ contract StandardToken is ERC20, SafeMath {
   mapping (address => mapping (address => uint)) allowed;
 
   /* Interface declaration */
-  function isToken() public constant returns (bool weAre) {
+  function isToken() public constant returns (bool Yes) {
     return true;
   }
 
@@ -89,8 +88,8 @@ contract StandardToken is ERC20, SafeMath {
     return true;
   }
 
-  function balanceOf(address _owner) constant returns (uint balance) {
-    return balances[_owner];
+  function balanceOf(address _address) constant returns (uint balance) {
+    return balances[_address];
   }
 
   function approve(address _spender, uint _value) returns (bool success) {
@@ -123,7 +122,7 @@ contract DESToken is StandardToken {
     mapping (address => bool) public noTransfer;
 	
 	// Время начала ICO и время окончания ICO
-	uint constant public TimeStart = 1511956800;//Константа - время начала ICO - 29.11.2017 в 15:00 по мск
+	uint constant public TimeStart = 1111956800;//Константа - время начала ICO - 29.11.2017 в 15:00 по мск //1511956800
 	uint public TimeEnd = 1514375999;//Время окончания ICO - 27.12.2017 в 14:59:59 по мск
 	
 	// Время окончания бонусных этапов (недель)
@@ -152,27 +151,27 @@ contract DESToken is StandardToken {
     bool public ICOFinished = false; //ICO было завершено
 	
     //Технические переменные для хранения данных статистики
-	uint public StatsEthereumRaised = 0;//Переменная сохранит в себе количество собранного Ethereum
+	uint public StatsEthereumRaised = 0 wei;//Переменная сохранит в себе количество собранного Ethereum
 	uint public StatsTotalSupply = 0;//Общее количество выпущенных токенов
 
     //События
     event Buy(address indexed sender, uint eth, uint fbt);//Покупка токенов
     event TokensSent(address indexed to, uint value);//Токены отправлены на адрес
     event ContributionReceived(address indexed to, uint value);//Вложение получено
-    event DisllowedTransfer(address target, bool disallow);//Наложение запрета на определенного покупателя на переводы токенов
     event PriceChanged(string _text, uint _tokenPrice);//Стоимость токена установлена вручную
     event TimeEndChanged(string _text, uint _timeEnd);//Время окончания ICO изменено вручную
+    event TimeTransferAllowanceChanged(string _text, uint _timeAllowance);//Время, до которого запрещены переводы токенов, изменено вручную
     
-    address public founder = 0x0;//Кошелек сбора средств 0x51559efc1acc15bcafc7e0c2fb440848c136a46b
+    address public wallet = 0x0;//Кошелек сбора средств 0x51559efc1acc15bcafc7e0c2fb440848c136a46b
     address public owner = 0x0;//Административные действия 0xE7F7d6cBCdC1fE78F938Bfaca6eA49604cB58D33
  
-function DESToken(address _founder, address _owner) payable {
+function DESToken(address _owner, address _wallet) payable {
         
-      founder = _founder;
       owner = _owner;
-        
-        balances[founder] = 0;
-        balances[owner] = 0;
+      wallet = _wallet;
+    
+      balances[owner] = 0;
+      balances[wallet] = 0;
     }
     
     modifier onlyOwner() {
@@ -202,37 +201,46 @@ function DESToken(address _founder, address _owner) payable {
         TimeEnd = _timeEnd;
         TimeEndChanged("New ICO End Time is ", _timeEnd);
     }
+     
+    //Установка времени, до которого запрещены переводы токенов
+    function setTimeTransferAllowance(uint _timeAllowance) external onlyOwner {
+        TimeTransferAllowed = _timeAllowance;
+        TimeTransferAllowanceChanged("Token transfers will be allowed at ", _timeAllowance);
+    }
+    
+    // Запретить определенному покупателю осуществлять переводы его токенов
+    // @параметр target Адрес покупателя, на который установить запрет
+    // @параметр allow Установить запрет (true) или запрет снят (false)
+    function disallowTransfer(address target, bool disallow) external onlyOwner {
+        noTransfer[target] = disallow;
+    }
     
     //Завершить ICO и создать пулы токенов (команда, баунти, эдвайзеры)
     function finishCrowdsale() external onlyOwner returns (bool) {
         if (ICOFinished == false) {
             
-            PoolTeam = safeDiv(safeMul(StatsTotalSupply,115),100);//Пул команды - выход на биржу через 1 месяц. 15%
-            PoolAdvisors = safeDiv(safeMul(StatsTotalSupply,107),100);//Пул эдвайзеров - выход на биржу через 1 месяц. 7%
-            PoolBounty = safeDiv(safeMul(StatsTotalSupply,103),100);//Пул баунти кампании - выход на биржу через 1 месяц. 3%
+            PoolTeam = StatsTotalSupply*15/100;//Пул команды - выход на биржу через 1 месяц. 15%
+            PoolAdvisors = StatsTotalSupply*7/100;//Пул эдвайзеров - выход на биржу через 1 месяц. 7%
+            PoolBounty = StatsTotalSupply*3/100;//Пул баунти кампании - выход на биржу через 1 месяц. 3%
             
             uint poolTokens = 0;
             poolTokens = safeAdd(poolTokens,PoolTeam);
             poolTokens = safeAdd(poolTokens,PoolAdvisors);
             poolTokens = safeAdd(poolTokens,PoolBounty);
             
-            mintToken(owner,poolTokens);//Зачислить на счет основателя токены пула команды, эдвайзеров и баунти
-            disallowTransfer(owner,true);//Запрещаем основателю на месяц осуществлять переводы токенов пула команды, эдвайзеров и баунти
-            ICOFinished = true;
+            //Зачислить на счет основателя токены пула команды, эдвайзеров и баунти
+            require(poolTokens>0);//Количество токенов должно быть больше 0
+            balances[owner] = safeAdd(balances[owner], poolTokens);
+            StatsTotalSupply = safeAdd(StatsTotalSupply, poolTokens);//Обновляем общее количество выпущенных токенов
+            Transfer(0, this, poolTokens);
+            Transfer(this, owner, poolTokens);
+            
+            noTransfer[owner] = true;//Запрещаем основателю на месяц осуществлять переводы токенов пула команды, эдвайзеров и баунти
+            
+            ICOFinished = true;//ICO завершено
             
             }
         }
-    
-    // Создать `mintedAmount` токенов и отправить их `target`
-    // @параметр target Адрес получателя токенов
-    // @параметр mintedAmount Количество создаваемых токенов
-    function mintToken(address target, uint mintedAmount) onlyOwner public {
-        require(mintedAmount>0);//Количество токенов должно быть больше 0
-        balances[target] = safeAdd(balances[target], mintedAmount);
-        StatsTotalSupply = safeAdd(StatsTotalSupply, mintedAmount);//Обновляем общее количество выпущенных токенов
-        Transfer(0, this, mintedAmount);
-        Transfer(this, target, mintedAmount);
-    }
 
     //Функция возвращает текущую стоимость в wei 1 токена
     function price() constant returns (uint) {
@@ -246,42 +254,51 @@ function DESToken(address _founder, address _owner) payable {
     // Создать `amount` токенов и отправить их `target`
     // @параметр target Адрес получателя токенов
     // @параметр amount Количество создаваемых токенов
-    function mintPreICOTokens(address target, uint amount) onlyOwner public {
-        mintToken(target,amount);
+    function sendPreICOTokens(address target, uint amount) onlyOwner external {
+        
+        require(amount>0);//Количество токенов должно быть больше 0
+        balances[target] = safeAdd(balances[target], amount);
+        StatsTotalSupply = safeAdd(StatsTotalSupply, amount);//Обновляем общее количество выпущенных токенов
+        Transfer(0, this, amount);
+        Transfer(this, target, amount);
+        
         PoolPreICO = safeAdd(PoolPreICO,amount);//Обновляем общее количество токенов в пуле Pre-ICO
     }
 
     //Функция покупки токенов на ICO
     function buy() public payable returns(bool) {
 
-        require (msg.sender != owner);//Основатели не могут покупать токены
-        require (msg.sender != founder);//Основатели не могут покупать токены
+        require(msg.sender != owner);//Основатели не могут покупать токены
+        require(msg.sender != wallet);//Основатели не могут покупать токены
         require(!ICOPaused);//Покупка разрешена, если ICO не приостановлено
         require(!ICOFinished);//Покупка разрешена, если ICO не завершено
-        require(msg.value>0);//Полученная сумма в wei должна быть больше 0
+        require(msg.value >= price());//Полученная сумма в wei должна быть больше стоимости 1 токена
         require(now >= TimeStart);//Условие продажи - ICO началось
         require(now <= TimeEnd);//Условие продажи - ICO не завершено
-        uint tokens = safeDiv(msg.value,price());//Количество токенов, которое должен получить покупатель
+        uint tokens = msg.value/price();//Количество токенов, которое должен получить покупатель
         require(safeAdd(StatsEthereumRaised, msg.value) <= HardCapEthereum);//Собранный эфир не больше hard cap
-        founder.transfer(msg.value);//Отправить полученные ETH на кошелек основателя
-        mintToken(msg.sender,tokens);//Зачисление токенов на счет покупателя
+        
+        require(tokens>0);//Количество токенов должно быть больше 0
+        
+        wallet.transfer(msg.value);//Отправить полученные ETH на кошелек сбора средств
+        
+        //Зачисление токенов на счет покупателя
+        balances[msg.sender] = safeAdd(balances[msg.sender], tokens);
+        StatsTotalSupply = safeAdd(StatsTotalSupply, tokens);//Обновляем общее количество выпущенных токенов
+        Transfer(0, this, tokens);
+        Transfer(this, msg.sender, tokens);
+        
+        noTransfer[msg.sender] = true;//Вносим покупателя в базу аккаунтов, которым 1 месяц после ICO запрещено осуществлять переводы токенов
+        
         StatsEthereumRaised = safeAdd(StatsEthereumRaised, msg.value);//Обновляем цифру собранных ETH
-        disallowTransfer(msg.sender,true);//Вносим покупателя в базу аккаунтов, которым 1 месяц после ICO запрещено осуществлять переводы токенов
         PoolICO = safeAdd(PoolICO, tokens);//Обновляем размер пула ICO
+        
         //Записываем события в блокчейн
         Buy(msg.sender, msg.value, tokens);
         TokensSent(msg.sender, tokens);
         ContributionReceived(msg.sender, msg.value);
 
         return true;
-    }
-    
-    // Запретить определенному покупателю осуществлять переводы его токенов
-    // @параметр target Адрес покупателя, на который установить запрет
-    // @параметр allow Установить запрет (true) или запрет снят (false)
-    function disallowTransfer(address target, bool disallow) onlyOwner public {
-        noTransfer[target] = disallow;
-        DisllowedTransfer(target, disallow);
     }
     
     function EventEmergencyStop() onlyOwner() {ICOPaused = true;}//Остановить ICO (в случае непредвиденных обстоятельств)
@@ -291,7 +308,7 @@ function DESToken(address _founder, address _owner) payable {
     function transfer(address _to, uint _value) isActive() returns (bool success) {
         
     if(now >= TimeTransferAllowed){
-        if(noTransfer[msg.sender]){disallowTransfer(msg.sender,false);}//Если переводы разрешены по времени, разрешаем их отправителю
+        if(noTransfer[msg.sender]){noTransfer[msg.sender] = false;}//Если переводы разрешены по времени, разрешаем их отправителю
     }
         
     if(now < TimeTransferAllowed){require(!noTransfer[msg.sender]);}//Если переводы еще не разрешены по времени, переводить могут только участники Pre-ICO
@@ -304,6 +321,13 @@ function DESToken(address _founder, address _owner) payable {
      * Prevent transfers until halt period is over.
      */
     function transferFrom(address _from, address _to, uint _value) isActive() returns (bool success) {
+        
+    if(now >= TimeTransferAllowed){
+        if(noTransfer[msg.sender]){noTransfer[msg.sender] = false;}//Если переводы разрешены по времени, разрешаем их отправителю
+    }
+        
+    if(now < TimeTransferAllowed){require(!noTransfer[msg.sender]);}//Если переводы еще не разрешены по времени, переводить могут только участники Pre-ICO
+        
         return super.transferFrom(_from, _to, _value);
     }
 
@@ -314,10 +338,10 @@ function DESToken(address _founder, address _owner) payable {
         owner = _to;
     }
 
-    //Сменить основателя
-    function changeFounder(address _to) onlyOwner() {
-        balances[_to] = balances[founder];
-        balances[founder] = 0;
-        founder = _to;
+    //Сменить адрес кошелька для сбора средств
+    function changeWallet(address _to) onlyOwner() {
+        balances[_to] = balances[wallet];
+        balances[wallet] = 0;
+        wallet = _to;
     }
 }
