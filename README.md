@@ -61,11 +61,11 @@ Whether the ICO is now suspended (true or false).
 ###### ICOFinished
 Whether the ICO has ended (true or false).
 ###### noTransfer
-Whether a specific address is prohibited from tranferring tokens within 30 days after the ICO end or at a manually set time before which token transfers are prohibited (the parameter is an Ethereum address).
+Whether a specific address is prohibited from transferring tokens within 30 days after the ICO end, or at manually set time, before which token transfers are prohibited (Ethereum address as parameter).
 ###### TimeTransferAllowed
-View the time from which the token transfers will be allowed.
+View time from which token transfers will be allowed.
 ###### PriceManual
-See which token price is now set manually. If more than 0 is set, the tokens are sold for this manual price, rather than at a price that depends on the current week of sales.
+See which token price is currently manually set. If more than 0 is set, the tokens are sold for this manual price, rather than at a price that depends on the current week of sales.
 ###### balanceOf
 Check token balance of specified address (the parameter is an Ethereum address).
 
