@@ -22,7 +22,7 @@ Mint and send a predefined number of tokens to the ICO participant.
 ###### sendTeamTokens
 Send tokens to a member of the team upon completion of the ICO. Note: recipient's token transfers will be prohibited within 30 days after the ICO end time.
 ###### sendAdvisorsTokens
-Send tokens to adviser upon completion of the ICO. Note: recipient's token transfers will be prohibited within 30 days after the ICO end time.
+Send tokens to advisor upon completion of the ICO. Note: recipient's token transfers will be prohibited within 30 days after the ICO end time.
 ###### sendBountyTokens
 Send tokens to bounty participant upon completion of the ICO. Note: recipient's token transfers will be prohibited within 30 days after the ICO end time.
 ###### changeOwner
