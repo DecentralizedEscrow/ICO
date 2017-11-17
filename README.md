@@ -34,7 +34,7 @@ Temporarily suspend all sales and transfers of tokens in case of unforeseen circ
 ###### EventEmergencyContinue
 Continue selling, cancel the emergency suspension.
 
-Information functions:
+Informational functions:
 ----------
 ###### PoolICO
 See the number of tokens in the ICO pool (the number of tokens sold on the ICO).
