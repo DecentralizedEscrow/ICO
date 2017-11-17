@@ -10,11 +10,11 @@ Change the ICO end time, instead of predefined.
 ###### disallowTransfer
 Prohibit token transfers for specific address within 30 days after the ICO, or manually set the time up to which the token transfers are prohibited.
 ###### setTimeTransferAllowance
-Change the time before which transfers of tokens are prohibited.
+Change the time before which token transfers are prohibited.
 ###### setTokenPrice
-Manually set the price of the token (in wei - https://etherconverter.online), and the sale will go at a given cost, and not at a price that depends on the selling week. Set the value to 0, to cancel and get back to default.
+Manually set the token price (in wei - https://etherconverter.online), and the sale will go at a given cost, and not at a price that depends on the week of the sale. Set the value to 0 to cancel and get back to default.
 ###### changeWallet
-Set different fundraising wallet (which come with the purchase of tokens ETH) (Ethereum-wallet as a parameter specified, but not Smart contract address! Multisig or ordinary wallet).
+Set different fundraising wallet (Ethereum multisig or ordinary wallet address as a parameter, but not Smart contract address!).
 ###### sendPreICOTokens
 Mint and send a predefined number of tokens to the PreICO participant.
 ###### sendICOTokens
