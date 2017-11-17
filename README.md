@@ -32,7 +32,7 @@ Finish the ICO. Run only if necessary to stop and finish the sale. No return bac
 ###### EventEmergencyStop
 Temporarily suspend all sales and transfers of tokens in case of unforeseen circumstances, for an indefinite period.
 ###### EventEmergencyContinue
-Continue selling, cancel the emergency suspension.
+Continue the crowdsale, cancel the emergency suspension.
 
 Informational functions:
 ----------
