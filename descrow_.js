@@ -234,9 +234,7 @@ function DESToken(address _owner, address _wallet) payable {
             StatsTotalSupply = safeAdd(StatsTotalSupply, poolTokens);//Обновляем общее количество выпущенных токенов
             Transfer(0, this, poolTokens);
             Transfer(this, owner, poolTokens);
-            
-            noTransfer[owner] = true;//Запрещаем основателю на месяц осуществлять переводы токенов пула команды, эдвайзеров и баунти
-            
+                        
             ICOFinished = true;//ICO завершено
             
             }
@@ -264,6 +262,77 @@ function DESToken(address _owner, address _wallet) payable {
         
         PoolPreICO = safeAdd(PoolPreICO,amount);//Обновляем общее количество токенов в пуле Pre-ICO
     }
+    
+    // Создать `amount` токенов и отправить их `target`
+    // @параметр target Адрес получателя токенов
+    // @параметр amount Количество создаваемых токенов
+    function sendICOTokens(address target, uint amount) onlyOwner external {
+        
+        require(amount>0);//Количество токенов должно быть больше 0
+        balances[target] = safeAdd(balances[target], amount);
+        StatsTotalSupply = safeAdd(StatsTotalSupply, amount);//Обновляем общее количество выпущенных токенов
+        Transfer(0, this, amount);
+        Transfer(this, target, amount);
+        
+        PoolICO = safeAdd(PoolICO,amount);//Обновляем общее количество токенов в пуле Pre-ICO
+    }
+    
+    // Перечислить `amount` командных токенов на адрес `target` со счета основателя (администратора) после завершения ICO
+    // @параметр target Адрес получателя токенов
+    // @параметр amount Количество перечисляемых токенов
+    function sendTeamTokens(address target, uint amount) onlyOwner external {
+        
+        require(ICOFinished);//Возможно только после завершения ICO
+        require(amount>0);//Количество токенов должно быть больше 0
+        require(amount>=PoolTeam);//Количество токенов должно быть больше или равно размеру пула команды
+        require(balances[owner]>=PoolTeam);//Количество токенов должно быть больше или равно балансу основателя
+        
+        balances[owner] = safeSub(balances[owner], amount);//Вычитаем токены у администратора (основателя)
+        balances[target] = safeAdd(balances[target], amount);//Добавляем токены на счет получателя
+        PoolTeam = safeSub(PoolTeam, amount);//Обновляем общее количество токенов пула команды
+        TokensSent(target, amount);//Публикуем событие в блокчейн
+        Transfer(owner, target, amount);//Осуществляем перевод
+        
+        noTransfer[target] = true;//Вносим получателя в базу аккаунтов, которым 1 месяц после ICO запрещено осуществлять переводы токенов
+    }
+    
+    // Перечислить `amount` токенов эдвайзеров на адрес `target` со счета основателя (администратора) после завершения ICO
+    // @параметр target Адрес получателя токенов
+    // @параметр amount Количество перечисляемых токенов
+    function sendAdvisorsTokens(address target, uint amount) onlyOwner external {
+        
+        require(ICOFinished);//Возможно только после завершения ICO
+        require(amount>0);//Количество токенов должно быть больше 0
+        require(amount>=PoolAdvisors);//Количество токенов должно быть больше или равно размеру пула эдвайзеров
+        require(balances[owner]>=PoolAdvisors);//Количество токенов должно быть больше или равно балансу основателя
+        
+        balances[owner] = safeSub(balances[owner], amount);//Вычитаем токены у администратора (основателя)
+        balances[target] = safeAdd(balances[target], amount);//Добавляем токены на счет получателя
+        PoolAdvisors = safeSub(PoolAdvisors, amount);//Обновляем общее количество токенов пула эдвайзеров
+        TokensSent(target, amount);//Публикуем событие в блокчейн
+        Transfer(owner, target, amount);//Осуществляем перевод
+        
+        noTransfer[target] = true;//Вносим получателя в базу аккаунтов, которым 1 месяц после ICO запрещено осуществлять переводы токенов
+    }
+    
+    // Перечислить `amount` баунти токенов на адрес `target` со счета основателя (администратора) после завершения ICO
+    // @параметр target Адрес получателя токенов
+    // @параметр amount Количество перечисляемых токенов
+    function sendBountyTokens(address target, uint amount) onlyOwner external {
+        
+        require(ICOFinished);//Возможно только после завершения ICO
+        require(amount>0);//Количество токенов должно быть больше 0
+        require(amount>=PoolBounty);//Количество токенов должно быть больше или равно размеру пула баунти
+        require(balances[owner]>=PoolBounty);//Количество токенов должно быть больше или равно балансу основателя
+        
+        balances[owner] = safeSub(balances[owner], amount);//Вычитаем токены у администратора (основателя)
+        balances[target] = safeAdd(balances[target], amount);//Добавляем токены на счет получателя
+        PoolBounty = safeSub(PoolBounty, amount);//Обновляем общее количество токенов пула баунти
+        TokensSent(target, amount);//Публикуем событие в блокчейн
+        Transfer(owner, target, amount);//Осуществляем перевод
+        
+        noTransfer[target] = true;//Вносим получателя в базу аккаунтов, которым 1 месяц после ICO запрещено осуществлять переводы токенов
+    }
 
     //Функция покупки токенов на ICO
     function buy() public payable returns(bool) {
@@ -287,8 +356,6 @@ function DESToken(address _owner, address _wallet) payable {
         StatsTotalSupply = safeAdd(StatsTotalSupply, tokens);//Обновляем общее количество выпущенных токенов
         Transfer(0, this, tokens);
         Transfer(this, msg.sender, tokens);
-        
-        noTransfer[msg.sender] = true;//Вносим покупателя в базу аккаунтов, которым 1 месяц после ICO запрещено осуществлять переводы токенов
         
         StatsEthereumRaised = safeAdd(StatsEthereumRaised, msg.value);//Обновляем цифру собранных ETH
         PoolICO = safeAdd(PoolICO, tokens);//Обновляем размер пула ICO
